@@ -7,7 +7,8 @@
 
 一套面向企业"内部知识 + 产品资料智能问答"的解决方案演示。用 RAG 让助手**只基于企业自己的文档回答、每句话可溯源、命中不到会主动拒答（防幻觉）**。
 
-- ▶️ **在线 / 本地演示**：打开 [`demo/index.html`](demo/index.html)，点右上角"演示模式"自动播放（零依赖，双击即可运行）
+- ▶️ **在线演示（推荐）**：<https://johan535.github.io/presales-portfolio/demo/> —— 点右上角"演示模式"自动播放
+- 💻 **本地演示**：打开 [`demo/index.html`](demo/index.html)（零依赖，双击即可运行）
 - 📄 **解决方案文档**：[`solution/解决方案文档.md`](solution/解决方案文档.md)（需求 / 架构 / ROI / 实施路径）
 - 📊 **方案讲解 PPT**：[`solution/解决方案.pptx`](solution/解决方案.pptx)
 - 🎬 **演示脚本 / 录屏分镜**：[`solution/演示脚本.md`](solution/演示脚本.md)
