@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KnowAssistant · 企业知识库 AI 问答（售前演示原型）</title>
+<style>
+  :root{
+    --blue:#2458b8; --blue-soft:#eaf0fb; --ink:#1f2430; --muted:#6b7280;
+    --line:#e6e9f0; --bg:#f5f7fb; --card:#fff; --ok:#12805c; --warn:#b45309;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font:14px/1.6 "Microsoft YaHei","PingFang SC",Arial,sans-serif}
+  .app{display:flex;flex-direction:column;height:100vh;min-height:640px}
+  header{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--blue);color:#fff}
+  header .logo{font-weight:800;font-size:17px;letter-spacing:.5px}
+  header .logo small{font-weight:400;opacity:.85;font-size:12px;margin-left:8px}
+  header .badge{margin-left:auto;font-size:12px;background:rgba(255,255,255,.16);padding:3px 10px;border-radius:20px}
+  header button{border:0;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;font-weight:700}
+  .btn-demo{background:#fff;color:var(--blue)}
+  .btn-reset{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)!important}
+  .grid{flex:1;display:grid;grid-template-columns:250px 1fr 300px;min-height:0}
+  aside{background:var(--card);border-right:1px solid var(--line);padding:16px;overflow:auto}
+  aside.right{border-right:0;border-left:1px solid var(--line)}
+  .side-title{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin:6px 0 10px}
+  .stats{display:flex;gap:8px;margin-bottom:16px}
+  .stat{flex:1;background:var(--blue-soft);border-radius:10px;padding:10px;text-align:center}
+  .stat b{display:block;font-size:18px;color:var(--blue)}
+  .stat span{font-size:11px;color:var(--muted)}
+  .doc{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;cursor:pointer;transition:.15s}
+  .doc:hover{border-color:var(--blue);box-shadow:0 2px 10px rgba(36,88,184,.1)}
+  .doc .t{font-weight:700;font-size:13px}
+  .doc .m{font-size:11px;color:var(--muted);margin-top:2px}
+  .upload{border:1px dashed var(--blue);color:var(--blue);border-radius:10px;text-align:center;padding:10px;font-size:12px;cursor:pointer;background:var(--blue-soft)}
+  main{display:flex;flex-direction:column;min-height:0;background:var(--bg)}
+  .chat{flex:1;overflow:auto;padding:22px 26px}
+  .msg{display:flex;margin-bottom:16px}
+  .msg .av{width:30px;height:30px;border-radius:8px;flex:0 0 auto;margin-right:10px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;font-weight:700}
+  .msg.user .av{background:#94a3b8}
+  .msg.bot .av{background:var(--blue)}
+  .bubble{max-width:82%;border-radius:12px;padding:12px 14px;background:var(--card);border:1px solid var(--line);box-shadow:0 1px 3px rgba(16,24,40,.04)}
+  .msg.user .bubble{background:#eef2f7}
+  .cite{display:inline-block;min-width:16px;text-align:center;font-size:11px;color:var(--blue);background:var(--blue-soft);border-radius:4px;padding:0 4px;margin-left:3px;cursor:pointer;font-weight:700}
+  .meta{margin-top:8px;font-size:12px;color:var(--muted)}
+  .meta .conf b{color:var(--ok)}
+  .meta .miss b{color:var(--warn)}
+  .tip{margin-top:8px;font-size:11px;color:var(--muted);border-top:1px dashed var(--line);padding-top:6px}
+  .welcome h3{margin:0 0 8px;font-size:15px}
+  .welcome p{margin:0 0 14px;color:var(--muted);font-size:13px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;transition:.15s}
+  .chip:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+  footer{border-top:1px solid var(--line);background:var(--card);padding:14px 20px}
+  .input-row{display:flex;gap:10px}
+  .input-row input{flex:1;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14px;outline:none}
+  .input-row input:focus{border-color:var(--blue)}
+  .send{border:0;border-radius:10px;background:var(--blue);color:#fff;padding:0 22px;font-weight:700;cursor:pointer;font-size:14px}
+  .src{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+  .src .h{display:flex;justify-content:space-between;font-size:12px;font-weight:700}
+  .src .h .sc{color:var(--blue)}
+  .bar{height:5px;background:var(--line);border-radius:4px;margin:6px 0}
+  .bar i{display:block;height:100%;background:var(--blue);border-radius:4px}
+  .src p{margin:4px 0 0;font-size:12px;color:#374151;line-height:1.5}
+  .pipe{font-size:12px;color:var(--muted)}
+  .pipe div{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .pipe b{color:var(--ink);width:78px;font-weight:700}
+  .empty{color:var(--muted);font-size:12px;text-align:center;padding:20px 6px}
+  .foot-note{font-size:10.5px;color:#9aa4b2;margin-top:8px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">KnowAssistant<small>企业知识库 AI 问答 · 售前演示原型</small></div>
+    <div class="badge">Powered by RAG</div>
+    <button class="btn-demo" onclick="startDemo()">▶ 演示模式</button>
+    <button class="btn-reset" onclick="resetAll()">重置</button>
+  </header>
+  <div class="grid">
+    <aside class="left">
+      <div class="side-title">企业知识库 · CloudHub 云枢科技</div>
+      <div class="stats">
+        <div class="stat"><b id="s-doc">0</b><span>文档</span></div>
+        <div class="stat"><b id="s-chunk">0</b><span>知识片段</span></div>
+        <div class="stat"><b>92%</b><span>召回率</span></div>
+      </div>
+      <div id="docs"></div>
+      <div class="upload" onclick="alert('演示原型：真实产品中此处支持上传 PDF/Word/网页，自动解析、分块、向量化入库。')">＋ 上传文档（演示）</div>
+      <div class="foot-note">演示原型说明：本页"检索"为真实的关键词/二元组召回；"回答"采用抽取式生成，接入大模型后即输出自然语言。用于呈现产品形态与售前方案效果。</div>
+    </aside>
+
+    <main>
+      <div class="chat" id="chat"></div>
+      <footer>
+        <div class="input-row">
+          <input id="q" placeholder="向企业知识库提问，例如：CloudHub 支持哪些操作系统？" onkeydown="if(event.key==='Enter')ask()">
+          <button class="send" onclick="ask()">发送</button>
+        </div>
+      </footer>
+    </main>
+
+    <aside class="right">
+      <div class="side-title">RAG 检索链路</div>
+      <div class="pipe" id="pipe"></div>
+      <div class="side-title" style="margin-top:16px">引用来源</div>
+      <div id="srcs"><div class="empty">提问后展示命中片段</div></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+// ===== 虚构企业知识库（内容基于"云枢科技 CloudHub 数据中台&BI"场景，全部为演示数据）=====
+const KB = [
+  {title:"产品手册", meta:"v3.2 · 4 片段", chunks:[
+    "CloudHub 采用 B/S 架构，客户端免安装，通过浏览器即可访问。服务端支持 Windows Server、主流 Linux 发行版，以及国产化环境麒麟、统信 UOS（信创适配）。",
+    "CloudHub 核心模块包括：数据采集与接入、数据治理与质量、指标建模、可视化 BI 看板、智能问数与权限管理，覆盖数据从接入到消费的完整闭环。",
+    "部署方式支持三种：公有云 SaaS（开箱即用）、私有化本地部署（数据不出域）、混合云部署；企业版支持信创全栈国产化环境。",
+    "系统提供开放 API 与标准连接器，可对接 MySQL、Oracle、PostgreSQL、Excel、业务系统数据库等常见数据源。"
+  ]},
+  {title:"售后服务政策", meta:"v2.1 · 3 片段", chunks:[
+    "服务等级（SLA）：标准版 5×8 工作日支持，专业版及以上提供 7×24 支持，企业版故障首次响应时间不超过 30 分钟。",
+    "SaaS 年付产品支持购买后 30 天内无理由退款；超过 30 天按剩余服务期比例退款；已使用的私有化实施服务费不予退还。",
+    "合同期内免费享受版本迭代升级与补丁；提供专属客户成功经理、上门培训与知识库支持。"
+  ]},
+  {title:"价格与商务方案", meta:"v4.0 · 3 片段", chunks:[
+    "定价按席位与数据量组合：标准版 99 元/席/月，专业版 299 元/席/月，企业版（私有化）按需定制报价。10 席位起售。",
+    "年付享受 8 折优惠；一次性采购三年另有折扣。企业版含私有化部署、专属支持与定制开发。",
+    "支持免费 30 天 POC 试用，并提供售前团队协助搭建客户真实场景的验证方案。"
+  ]},
+  {title:"竞品与优势对比", meta:"v1.8 · 2 片段", chunks:[
+    "相较传统 BI 报表工具，CloudHub 的核心优势是 AI 智能问数：用自然语言即可取数、生成图表，业务人员上手周期从数周缩短到几天；并原生支持信创国产化环境。",
+    "相较国外同类 BI 产品，CloudHub 提供本地化服务与快速响应、数据合规不出域、更高的性价比与更贴合国内业务场景的模板。"
+  ]},
+  {title:"典型客户案例", meta:"v2.5 · 3 片段", chunks:[
+    "零售行业：为某连锁零售集团搭建会员与商品数据中台，报表生成效率提升约 3 倍，经营看板从 T+1 缩短到准实时。",
+    "制造行业：某装备制造企业通过设备数据接入与 BI 分析，将报表上线周期缩短约 40%，管理层实现一屏看产线。",
+    "金融/政企：某机构以私有化方式部署 CloudHub，满足数据不出域与信创合规要求，统一了分散在各处室的指标口径。"
+  ]},
+  {title:"公司与团队", meta:"v1.0 · 2 片段", chunks:[
+    "云枢科技专注数据中台与 BI 智能分析，拥有多项软件著作权，通过 ISO 质量体系认证，团队覆盖数据工程、算法与产品交付。",
+    "公司提供从售前咨询、方案设计、POC 验证到交付与客户成功的全流程服务。"
+  ]},
+  {title:"内部员工制度", meta:"v1.0 · 2 片段", chunks:[
+    "员工入职即享年假，按工龄 5 至 15 天不等；差旅报销在 3000 元以内凭发票据实报销。",
+    "内部数据权限按角色分级，跨部门数据访问需审批。"
+  ]}
+];
+KB.forEach(d=>d.chunks.forEach((c,i)=>{d.chunks[i]={id:`${d.title}#${i+1}`,doc:d.title,text:c}}));
+const ALL = KB.flatMap(d=>d.chunks);
+document.getElementById('s-doc').textContent = KB.length;
+document.getElementById('s-chunk').textContent = ALL.length;
+document.getElementById('docs').innerHTML = KB.map((d,i)=>`<div class="doc" onclick="showDoc('${d.title}')"><div class="t">${d.title}</div><div class="m">${d.meta}</div></div>`).join('');
+
+const chat=document.getElementById('chat');
+const PRESET=["CloudHub 支持哪些操作系统？","私有化怎么部署，收费吗？","退款政策是怎样的？","你们和传统 BI 比有什么优势？","有没有零售行业的落地案例？","帮我写一首关于秋天的诗"];
+chat.innerHTML=`<div class="msg bot"><div class="av">AI</div><div class="bubble welcome"><h3>你好，我是企业知识库助手 👋</h3><p>我可以基于贵司的产品、政策、案例等文档，给出可溯源、带引用的回答。试试下面的问题，或点右上角"演示模式"自动播放。</p><div class="chips">${PRESET.map(q=>`<span class="chip" onclick="quick('${q}')">${q}</span>`).join('')}</div></div></div>`;
+
+function bigrams(s){s=s.replace(/[^\u4e00-\u9fa5A-Za-z0-9]/g,'');const set=new Set();for(let i=0;i<s.length-1;i++)set.add(s.slice(i,i+2));if(s.length===1)set.add(s);return [...set];}
+function retrieve(query){const bs=bigrams(query);const scored=ALL.map(c=>{let sc=0;bs.forEach(b=>{if(c.text.includes(b))sc++;});return {c,sc};}).filter(x=>x.sc>0).sort((a,b)=>b.sc-a.sc);return scored.slice(0,3);}
+
+function quick(q){document.getElementById('q').value=q;ask();}
+function showDoc(title){const d=KB.find(x=>x.title===title);if(d)renderSources([{c:d.chunks[0],sc:5}],'📄 《'+title+'》全部内容');}
+
+function ask(){
+  const input=document.getElementById('q');const query=input.value.trim();if(!query)return;
+  input.value='';addMsg('user',query);
+  const hits=retrieve(query);
+  const bot=addMsg('bot','<span class="meta">检索知识库中…</span>');
+  setTimeout(()=>{
+    document.getElementById('pipe').innerHTML = pipeHTML(query,hits);
+    if(hits.length===0){
+      bot.querySelector('.bubble').innerHTML=`抱歉，当前企业知识库中<b style="color:var(--warn)">没有找到与该问题直接相关的内容</b>，为避免编造，我不作臆测回答。你可以换个说法，或先上传相关文档。`+`<div class="meta miss">置信度：低 · <b>未命中（已触发防幻觉边界）</b></div>`;
+      renderSources([],query);
+    }else{
+      const max=hits[0].sc;
+      let body=`结合企业知识库检索，为你整理如下：`;
+      hits.forEach((h,i)=>{body+=`<div style="margin-top:8px"><span class="cite" onclick="flashSrc(${i})">${i+1}</span> <b>《${h.c.doc}》</b>：${h.c.text}</div>`;});
+      const conf=hits[0].sc>=3?'高':'中';
+      body+=`<div class="meta conf">置信度：<b>${conf}</b> · 命中 ${hits.length} 条 · 首条相关度 ${Math.round(max*15)}%</div>`;
+      body+=`<div class="tip">🔗 每条回答均可点击引用编号跳转到原文片段，保证答案可溯源。这正是企业客户最看重的"不胡说、可审计"。</div>`;
+      bot.querySelector('.bubble').innerHTML=body;
+      renderSources(hits,query);
+    }
+  },500);
+}
+
+function addMsg(who,html){
+  const el=document.createElement('div');el.className='msg '+who;
+  el.innerHTML=`<div class="av">${who==='user'?'我':'AI'}</div><div class="bubble">${html}</div>`;
+  chat.appendChild(el);chat.scrollTop=chat.scrollHeight;return el;
+}
+function pipeHTML(query,hits){
+  const docs=hits.length?[...new Set(hits.map(h=>h.c.doc))]:['—'];
+  return `<div><b>① 查询</b>${query}</div>
+  <div><b>② 解析分块</b>${ALL.length} 片段已就绪</div>
+  <div><b>③ 检索召回</b>${hits.length?hits.length+' 条':'未命中'}</div>
+  <div><b>④ 重排 Top-K</b>${docs.join('、')}</div>
+  <div><b>⑤ 生成回答</b>抽取式 + 引用标注</div>`;
+}
+function renderSources(hits,query){
+  const box=document.getElementById('srcs');
+  if(!hits.length){box.innerHTML=`<div class="empty">未命中知识库<br>（演示：系统主动拒答而非编造）</div>`;return;}
+  const max=hits[0].sc;
+  box.innerHTML=`<div class="side-title" style="margin:0 0 8px">「${query}」命中片段</div>`+hits.map((h,i)=>`<div class="src" id="src-${i}"><div class="h"><span>[${i+1}] 《${h.c.doc}》</span><span class="sc">${Math.round(h.sc/(max||1)*100)}%</span></div><div class="bar"><i style="width:${Math.round(h.sc/(max||1)*100)}%"></i></div><p>${h.c.text}</p></div>`).join('');
+}
+function flashSrc(i){const el=document.getElementById('src-'+i);if(!el)return;el.style.border='1px solid var(--blue)';el.style.background='var(--blue-soft)';el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{el.style.border='1px solid var(--line)';el.style.background='#fff';},900);}
+function resetAll(){location.reload();}
+
+// ===== 演示模式：自动播放脚本，方便录屏 =====
+async function startDemo(){
+  const seq=["CloudHub 支持哪些操作系统？","私有化怎么部署，收费吗？","有没有零售行业的落地案例？","帮我写一首关于秋天的诗"];
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  await wait(400);
+  for(const q of seq){document.getElementById('q').value=q;ask();await wait(2600);}
+}
+</script>
+</body>
+</html>
